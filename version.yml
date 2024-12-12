@@ -1,3 +1,10 @@
 version: 11AUG2024
-download_url: https://maplelegends-mirror.ylivay.dev/installers/MAC11AUG2024.pkg
+# Where to download the installer from.
+# Options:
+# - direct: uses direct_url
+# - gdrive: uses gdoc_fileid
+# - mega: uses mega_url
+download_from: mega
+direct_url: https://maplelegends-mirror.ylivay.dev/installers/MAC11AUG2024.pkg
 gdoc_fileid: 15k9P1CB4y9ov_PUvv5Upqvrc6KjROdf0
+mega_url: https://mega.nz/file/VK8zEDTS#KVpfjo5V_rUa_FQjvdi-DEz8-QqxU5fLsTTRskrQZTo

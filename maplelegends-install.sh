@@ -7,14 +7,34 @@ run() {
     me=$(basename "$0")
 
     cur_version=$(cat "$script_dir/version.yml" | sed -n 's/^version\s*:\s*//p')
-    download_url=$(cat "$script_dir/version.yml" | sed -n 's/^download_url\s*:\s*//p')
-    if [ -z "$download_url" ]; then
+    download_from=$(cat "$script_dir/version.yml" | sed -n 's/^download_from\s*:\s*//p')
+    if [ -z "$download_from" ]; then
+        download_from="direct"
+    fi
+
+    download_url=""
+    if [ "$download_from" = "direct" ]; then
+        download_url=$(cat "$script_dir/version.yml" | sed -n 's/^direct_url\s*:\s*//p')
+        if [ -z "$download_url" ]; then
+            echo "Couldn't find direct_url in '$script_dir/version.yml'" >&2
+            exit 1
+        fi
+    elif [ "$download_from" = "gdrive" ]; then
         gdoc_fileid=$(cat "$script_dir/version.yml" | sed -n 's/^gdoc_fileid\s*:\s*//p')
         if [ -z "$gdoc_fileid" ]; then
-            echo "Couldn't find download_url or gdoc_fileid in '$script_dir/version.yml'" >&2
+            echo "Couldn't find gdoc_fileid in '$script_dir/version.yml'" >&2
             exit 1
         fi
         download_url="https://drive.usercontent.google.com/download?id=${gdoc_fileid}&confirm=t"
+    elif [ "$download_from" = "mega" ]; then
+        download_url=$(cat "$script_dir/version.yml" | sed -n 's/^mega_url\s*:\s*//p')
+        if [ -z "$download_url" ]; then
+            echo "Couldn't find mega_url in '$script_dir/version.yml'" >&2
+            exit 1
+        fi
+    else
+        echo "Unsupported download_from value '$download_from' in '$script_dir/version.yml'" >&2
+        exit 1
     fi
 
     # validate arguments
@@ -45,7 +65,7 @@ run() {
     fi
 
     # check for required commands
-    required_commands="curl bsdtar cpio wine sed unzip"
+    required_commands="curl bsdtar cpio wine sed unzip openssl"
     required_commands=$(echo "$required_commands" | tr ' ' "\n")
     missing_commands=""
     for cmd in $required_commands; do
@@ -56,19 +76,19 @@ run() {
 
     # if any missing commands
     if [ -n "$missing_commands" ]; then
-        echo "Missing required commands:\n $missing_commands" >&2
+        echo -e "Missing required commands:\n $missing_commands" >&2
 
         # Suggest install commands based on package manager
         if command -v apt-get >/dev/null; then
             # replace bsdtar with libarchive-tools
             missing_commands=$(echo "$missing_commands" | sed 's/bsdtar/libarchive-tools/')
-            echo "Try installing them with:\n  sudo apt-get install$missing_commands" >&2
+            echo -e "Try installing them with:\n  sudo apt-get install$missing_commands" >&2
         elif command -v pacman >/dev/null; then
-            echo "Try installing them with:\n  sudo pacman -S$missing_commands" >&2
+            echo -e "Try installing them with:\n  sudo pacman -S$missing_commands" >&2
         elif command -v dnf >/dev/null; then
-            echo "Try installing them with:\n  sudo dnf install$missing_commands" >&2
+            echo -e "Try installing them with:\n  sudo dnf install$missing_commands" >&2
         elif command -v yum >/dev/null; then
-            echo "Try installing them with:\n  sudo yum install$missing_commands" >&2
+            echo -e "Try installing them with:\n  sudo yum install$missing_commands" >&2
         fi
 
         exit 1
@@ -229,7 +249,33 @@ run() {
 
     echo "Downloading game client..."
     download_to="$mytmp/MapleLegends.pkg"
-    curl -L -o "$download_to" "$download_url"
+
+    if [ "$download_from" = "mega" ]; then
+        set -x
+        $script_dir/megafetch.sh "$download_url" > "$mytmp/mega-download"
+
+        # mega-download will have 4 lines:
+        # 1. download url
+        download_url=$(sed -n '1p' "$mytmp/mega-download")
+        # 2. file name
+        file_name=$(sed -n '2p' "$mytmp/mega-download")
+        # 3. key
+        key=$(sed -n '3p' "$mytmp/mega-download")
+        # 4. iv
+        iv=$(sed -n '4p' "$mytmp/mega-download")
+
+        if [ -z "$download_url" ] || [ -z "$file_name" ] || [ -z "$key" ] || [ -z "$iv" ]; then
+            echo "Failed to parse download information from mega." >&2
+            exit 1
+        fi
+
+        curl -L -o "$download_to" "$download_url"
+        cat "$download_to" | openssl enc -d -aes-128-ctr -K $key -iv $iv > "${download_to}.new"
+        mv -f "${download_to}.new" "$download_to"
+        set +x
+    else
+        curl -L -o "$download_to" "$download_url"
+    fi
 
     # Some sanity checks - if the downloaded file is too small (lets say less than 1GB), its probably an error.
     downloaded_size=$(stat -c %s "$download_to")
