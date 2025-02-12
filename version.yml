@@ -1,10 +1,10 @@
-version: 16DEC2024
+version: 10FEB2025
 # Where to download the installer from.
 # Options:
 # - direct: uses direct_url
 # - gdrive: uses gdoc_fileid
 # - mega: uses mega_url
-download_from: direct
-direct_url: https://maplelegends-mirror.ylivay.dev/installers/MAC16DEC2024.pkg
-gdoc_fileid: ""
-mega_url: https://mega.nz/file/dek2wZLK#1gk6QQRE-tDu-jN3HifVX2dFDTBJH28mblVfU3ibL_g
+download_from: gdrive
+direct_url: 
+gdoc_fileid: 1KzeArg9bjyZzi5gkLIJYRjK62VUmCJVr
+mega_url: 
