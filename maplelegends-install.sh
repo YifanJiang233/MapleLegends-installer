@@ -55,6 +55,9 @@ run() {
             --update)
                 mode="update"
                 ;;
+            --update-continue)
+                mode="update-continue"
+                ;;
             # starts with '-' (looks like an option)
             -*)
                 echo "$me: unrecognized option '$1'
@@ -127,7 +130,7 @@ run() {
         update_extracted_to="$update_dir"
         rimraf "$update_dir" "Removing previous update directory at '$update_dir'. Continue?"
         mkdir -p "$update_dir"
-            
+
         # if theres a .git folder its a git repo
         if [ -d "$script_dir/.git" ]; then
             if ! command -v git >/dev/null; then
@@ -171,7 +174,9 @@ run() {
             if [ "$current_commit" = "$new_commit" ]; then
                 echo "Already up-to-date."
                 rm -rf "$update_dir"
-                exit 0
+
+                . "$script_dir/maplelegends-install.sh" --update-continue
+                exit $?
             fi
         else
             zip_download_from="https://github.com/Yareeeef/MapleLegends-installer/archive/main.zip"
@@ -192,6 +197,9 @@ run() {
         new_version=$(cat "$script_dir/version.yml" | sed -n 's/^version\s*:\s*//p')
         echo "Updated to version '${new_version}'."
         
+        . "$script_dir/maplelegends-install.sh" --update-continue
+        exit $?
+    elif [ $mode = "update-continue" ]; then
         install_dir=$(cat "$script_dir/current_install.txt" 2>/dev/null || echo '')
         if [ -z "$install_dir" ]; then
             echo "No previous installation found. Please re-install." >&2
@@ -200,10 +208,18 @@ run() {
         else
             # check if we have write permission on $install_dir
             if ! touch "$install_dir/.test" 2>/dev/null; then
-                echo "No write permission on previous installation directory. Please re-install." >&2
+                echo "No write permission on previous installation directory. Please re-install in a new location." >&2
                 install_dir=""
+            else
+                rm -f "$install_dir/.test" || true
+                read -p "Will update existing installation '$install_dir'. Is this correct? [Y/n] " REPLY
+                if ! expr "${REPLY:-y}" : '^[Yy]$' 1>/dev/null 2>/dev/null; then
+                    install_dir=""
+                fi
+
+                echo -e "\nIMPORTANT: I need to first remove the existing installation in '$install_dir'."
+                rimraf "$install_dir" "The entire directory will be removed. Continue?"
             fi
-            rm -f "$install_dir/.test" || true
         fi
     else
         install_dir="${1:-}"
@@ -228,10 +244,13 @@ run() {
             continue
         fi
 
-        read -p "Will install to '$install_dir'. Is this correct? [Y/n] " REPLY
-        if ! expr "${REPLY:-y}" : '^[Yy]$' 1>/dev/null 2>/dev/null; then
-            install_dir=""
-            continue
+        # if should skip prompt (not update-continue mode)
+        if [ $mode != "update-continue" ]; then
+            read -p "Will install to '$install_dir'. Is this correct? [Y/n] " REPLY
+            if ! expr "${REPLY:-y}" : '^[Yy]$' 1>/dev/null 2>/dev/null; then
+                install_dir=""
+                continue
+            fi
         fi
 
         if [ -d "$install_dir" ]; then
