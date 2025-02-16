@@ -4,7 +4,7 @@ version: 10FEB2025
 # - direct: uses direct_url
 # - gdrive: uses gdoc_fileid
 # - mega: uses mega_url
-download_from: gdrive
-direct_url: 
+download_from: direct
+direct_url: https://maplelegends-mirror.ylivay.dev/installers/MAC10FEB2025.pkg
 gdoc_fileid: 1KzeArg9bjyZzi5gkLIJYRjK62VUmCJVr
-mega_url: 
+mega_url:
