@@ -348,6 +348,8 @@ run() {
     fi
 
     rimraf "$mytmp" "Remove temporary files in '$mytmp'?"
+
+    echo "Happy Mapling!"
 }
 
 run "$@"
