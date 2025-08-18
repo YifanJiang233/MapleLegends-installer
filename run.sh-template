@@ -6,4 +6,5 @@ install_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 wine_dir="${install_dir}/.wine"
 
 cd "${install_dir}/Game"
-WINEPREFIX="$wine_dir" WINEARCH=win32 wine "MapleLegends.exe"
+executable_name="${1:-MapleLegends.exe}"
+WINEPREFIX="$wine_dir" WINEARCH=win32 wine "$executable_name"
