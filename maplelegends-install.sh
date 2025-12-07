@@ -97,6 +97,14 @@ run() {
         exit 1
     fi
 
+    if command -v wine32 >/dev/null; then
+        wine_exec="wine32"
+        wine_arch="win32"
+    else
+        wine_exec="wine"
+        wine_arch=""
+    fi
+
     rimraf() {
         if [ ! -d "$1" ]; then
             return 0
@@ -324,7 +332,7 @@ run() {
 
     echo "Preparing Wine prefix..."
     winedir="$install_dir/.wine"
-    WINEPREFIX="$winedir" WINEARCH=win32 wine winecfg -v win98
+    WINEPREFIX="$winedir" WINEARCH=$wine_arch $wine_exec winecfg -v win98
 
     echo "Patching..."
     cp -vf "$script_dir/ws2_32.dll" "$winedir/drive_c/windows/system32/ws2_32.dll"
