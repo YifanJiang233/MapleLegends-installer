@@ -38,7 +38,7 @@ run() {
     fi
 
     # validate arguments
-    if [ $# -gt 1 ] ; then
+    if [ $# -gt 1 ]; then
         echo "$me: too many arguments.
     Try '$me --help' for more information."
         exit 1
@@ -47,23 +47,23 @@ run() {
     mode="install"
     if [ $# -eq 1 ]; then
         case "$1" in
-            -h | --help)
-                echo "Usage: $me [INSTALL_DIR]
+        -h | --help)
+            echo "Usage: $me [INSTALL_DIR]
     Install MapleLegends to INSTALL_DIR. Prompts for directory if not provided."
-                exit 0
-                ;;
-            --update)
-                mode="update"
-                ;;
-            --update-continue)
-                mode="update-continue"
-                ;;
-            # starts with '-' (looks like an option)
-            -*)
-                echo "$me: unrecognized option '$1'
+            exit 0
+            ;;
+        --update)
+            mode="update"
+            ;;
+        --update-continue)
+            mode="update-continue"
+            ;;
+        # starts with '-' (looks like an option)
+        -*)
+            echo "$me: unrecognized option '$1'
     Try '$me --help' for more information."
-                exit 1
-                ;;
+            exit 1
+            ;;
         esac
     fi
 
@@ -102,7 +102,7 @@ run() {
         wine_arch="win32"
     else
         wine_exec="wine"
-        wine_arch=""
+        wine_arch="win32"
     fi
 
     rimraf() {
@@ -153,8 +153,8 @@ run() {
             # into ourselves.
             find "$script_dir" -mindepth 1 -maxdepth 1 -not -name ".update" -exec cp -a {} .update \; 1>/dev/null
             # check if the directory is clean (no untracked and no modified files)
-            if ! git -C "$script_dir" diff --exit-code --quiet \
-                || ! git -C "$script_dir" diff --exit-code --cached --quiet; then
+            if ! git -C "$script_dir" diff --exit-code --quiet ||
+                ! git -C "$script_dir" diff --exit-code --cached --quiet; then
                 echo "Cheeky cheeky! Can't update because you have some local changes." >&2
                 echo "Use 'git status' to see whats up." >&2
                 rm -rf "$update_dir"
@@ -201,10 +201,10 @@ run() {
         # Note: cp -f required because some files may not be writable.
         find "$update_extracted_to" -mindepth 1 -maxdepth 1 -exec cp -af {} "$script_dir/" \; 1>/dev/null
         rm -rf "$update_dir"
-        
+
         new_version=$(cat "$script_dir/version.yml" | sed -n 's/^version\s*:\s*//p')
         echo "Updated to version '${new_version}'."
-        
+
         . "$script_dir/maplelegends-install.sh" --update-continue
         exit $?
     elif [ $mode = "update-continue" ]; then
@@ -269,7 +269,7 @@ run() {
     done
     # echo "$install_dir"
 
-    echo "$install_dir" > "$script_dir/current_install.txt"
+    echo "$install_dir" >"$script_dir/current_install.txt"
     mkdir -p "$install_dir"
     mytmp="$install_dir/.tmp-install"
     mkdir -p "$mytmp"
@@ -279,7 +279,7 @@ run() {
 
     if [ "$download_from" = "mega" ]; then
         set -x
-        $script_dir/megafetch.sh "$download_url" > "$mytmp/mega-download"
+        $script_dir/megafetch.sh "$download_url" >"$mytmp/mega-download"
 
         # mega-download will have 4 lines:
         # 1. download url
@@ -297,7 +297,7 @@ run() {
         fi
 
         curl -L -o "$download_to" "$download_url"
-        cat "$download_to" | openssl enc -d -aes-128-ctr -K $key -iv $iv > "${download_to}.new"
+        cat "$download_to" | openssl enc -d -aes-128-ctr -K $key -iv $iv >"${download_to}.new"
         mv -f "${download_to}.new" "$download_to"
         set +x
     else
@@ -351,8 +351,8 @@ run() {
         fi
 
         sed -e "s~{{ INSTALL_DIR }}~${install_dir}~g" \
-            < "$script_dir/maplelegends.desktop-template" \
-            > "$desktop_entry"
+            <"$script_dir/maplelegends.desktop-template" \
+            >"$desktop_entry"
     fi
 
     rimraf "$mytmp" "Remove temporary files in '$mytmp'?"
