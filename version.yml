@@ -1,10 +1,12 @@
-version: 03DEC2025
+version: 11JAN2026
 # Where to download the installer from.
 # Options:
+# - local: uses local_path
 # - direct: uses direct_url
 # - gdrive: uses gdoc_fileid
 # - mega: uses mega_url
 download_from: direct
-direct_url: https://maplelegends-mirror.ylivay.dev/installers/MAC03DEC2025.pkg
+local_path: /path/to/MapleLegends-MAC11JAN2026.pkg
+direct_url: https://maplelegends-mirror.ylivay.dev/installers/MAC11JAN2026.pkg
 gdoc_fileid:
 mega_url:

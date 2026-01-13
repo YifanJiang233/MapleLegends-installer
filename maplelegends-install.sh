@@ -32,6 +32,16 @@ run() {
             echo "Couldn't find mega_url in '$script_dir/version.yml'" >&2
             exit 1
         fi
+    elif [ "$download_from" = "local" ]; then
+        download_url=$(cat "$script_dir/version.yml" | sed -n 's/^local_path\s*:\s*//p')
+        if [ -z "$download_url" ]; then
+            echo "Couldn't find local_path in '$script_dir/version.yml'" >&2
+            exit 1
+        fi
+        if [ ! -f "$download_url" ]; then
+            echo "Local file '$download_url' not found." >&2
+            exit 1
+        fi
     else
         echo "Unsupported download_from value '$download_from' in '$script_dir/version.yml'" >&2
         exit 1
@@ -300,6 +310,8 @@ run() {
         cat "$download_to" | openssl enc -d -aes-128-ctr -K $key -iv $iv > "${download_to}.new"
         mv -f "${download_to}.new" "$download_to"
         set +x
+    elif [ "$download_from" = "local" ]; then
+        cp -av "$download_url" "$download_to"
     else
         curl -L -o "$download_to" "$download_url"
     fi
