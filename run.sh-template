@@ -8,12 +8,4 @@ wine_dir="${install_dir}/.wine"
 cd "${install_dir}/Game"
 executable_name="${1:-MapleLegends.exe}"
 
-if command -v wine32 >/dev/null; then
-    wine_exec="wine32"
-    wine_arch="win32"
-else
-    wine_exec="wine"
-    wine_arch=""
-fi
-
-WINEPREFIX="$wine_dir" WINEARCH=$wine_arch $wine_exec "$executable_name"
+gamescope -h 768 -H 1080 -F fsr -- sh -c "WINEPREFIX=$wine_dir WINEARCH=win32 wine $executable_name"
